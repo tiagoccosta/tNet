@@ -51,11 +51,13 @@ public class Main
 					manager.startHost(Integer.parseInt(port));
 				}
 				if(command[0].equals("$StartClient") || command[0].equals( "$3")){
-					String[] info = command[1].split(";");
-					String ip = info[0];
-					int port = Integer.parseInt(info[1]);
-					//System.out.println("Intializing client. IP: "+ip+" |Port: "+port); 
-					manager.startClient(ip,port);
+					if(command[1].contains(";")){
+						String[] info = command[1].split(";");
+						String ip = info[0];
+						int port = Integer.parseInt(info[1]);
+						//System.out.println("Intializing client. IP: "+ip+" |Port: "+port); 
+						manager.startClient(ip,port);
+					}
 				}
 				if(command[0].equals( "$KickClient") || command[0].equals( "$4")){
 					String port = command[1];
