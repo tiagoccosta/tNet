@@ -77,112 +77,6 @@ public class MainActivity extends Activity
 		
 		
 		manager = new NetworkManager();
-		/*
-			@Override
-			public void onStartServer(){
-				super.onStartServer();
-				pd.dismiss();
-				runOnUiThread(new Runnable(){
-						public void run(){
-							btnHost.setText("Stop Server");
-							btnHost.setOnClickListener(new OnClickListener(){
-									@Override
-									public void onClick(View v){
-										StopServer();
-									}	
-								});
-						}
-					});
-			}
-			@Override
-			public void onStartClient(ConnectionID conn){
-				super.onStartClient(conn);
-				pd.dismiss();
-				runOnUiThread(new Runnable(){
-						public void run(){
-							btnClient.setText("Stop Client");
-							btnClient.setOnClickListener(new OnClickListener(){
-									@Override
-									public void onClick(View v){
-										StopClient();
-									}	
-								});
-						}
-					});
-			}
-			@Override
-			public void errorOnStartServer(int code){
-				super.errorOnStartServer(code);
-				pd.dismiss();
-			}
-			@Override
-			public void errorOnStartClient(int code){
-				super.errorOnStartClient(code) ; 
-				pd.dismiss();
-			}
-			
-			@Override
-			public void onUpdateClientList(List<ConnectionID> clients){
-				ConnectionID[] observersCopy = observers.toArray(new ConnectionID[observers.size()]);
-				for(ConnectionID observer:observersCopy){
-					if(clients.contains(observer)){
-						observers.remove(observer);
-					}
-				}
-			}
-			
-			@Override
-			public void OnReceiveCustomizedData(NetworkMessage msg,boolean inServer){
-				if(msg.getKey().equals("request_cam_info")){
-					observers.add(msg.getSenderID());
-					manager.sendToClients("","cam_info", new ConnectionID[]{msg.getSenderID()});
-				}
-				//if(msg.getKey().equals("cam_info")){}
-			}
-			
-			@Override
-			public void onServerStop(int code){
-				runOnUiThread(new Runnable(){
-						public void run(){
-							btnHost.setText("Start Host");
-							btnHost.setOnClickListener(new OnClickListener(){
-									@Override
-									public void onClick(View v){
-										pd = new ProgressDialog(MainActivity.this);
-										pd.setMessage("Initializing server...");
-										pd.setCancelable(false);
-										pd.show();
-										StartHost(8080);
-									}	
-								});
-						}
-					});
-			}
-
-			@Override
-			public void onClientStop(int  disconnectionCode){
-				super.onClientStop(disconnectionCode);
-				runOnUiThread(new Runnable(){
-						public void run(){
-							btnClient.setText("Start Client");
-							btnClient.setOnClickListener(new OnClickListener(){
-									@Override
-									public void onClick(View v){
-										pd = new ProgressDialog(MainActivity.this);
-										pd.setMessage("Initializing client...");
-										pd.setCancelable(false);
-										pd.show();
-
-										String address = editTextAddressToConnect.getText().toString();
-										System.out.println("Starting client.... "+address);
-										StartClient(address,8080);
-									}	
-								});
-						}
-					});
-			}
-		};
-		*/
 		manager.setOnStartServerListener(
 			new OnConnectionStartListener(){
 				public void run(){
@@ -205,6 +99,7 @@ public class MainActivity extends Activity
 			new OnConnectionStartListener(){
 				public void run(){
 					pd.dismiss();
+					manager.sendToAll("","info");
 					runOnUiThread(new Runnable(){
 							public void run(){
 								btnClient.setText("Stop Client");
@@ -232,7 +127,7 @@ public class MainActivity extends Activity
 											pd.setMessage("Initializing server...");
 											pd.setCancelable(false);
 											pd.show();
-											manager.StartHost(8080);
+											manager.startHost(8080);
 										}	
 									});
 							}
@@ -256,7 +151,7 @@ public class MainActivity extends Activity
 
 											String address = editTextAddressToConnect.getText().toString();
 											System.out.println("Starting client.... "+address);
-											manager.StartClient(address,8080);
+											manager.startClient(address,8080);
 										}	
 									});
 							}
@@ -283,7 +178,7 @@ public class MainActivity extends Activity
 				public void run(NetworkMessage msg){
 					if(msg.getKey().equals("request_cam_info")){
 						observers.add(msg.getSenderID());
-						manager.sendToClients("","cam_info", new ConnectionID[]{msg.getSenderID()});
+						manager.sendToClients("info","info", new ConnectionID[]{msg.getSenderID()});
 					}
 				}
 			});
@@ -331,7 +226,7 @@ public class MainActivity extends Activity
 		pd.setCancelable(false);
 		pd.show();
 
-		manager.StartHost (8080);
+		manager.startHost (8080);
 	}
 
 	public void startClient(){
@@ -344,7 +239,7 @@ public class MainActivity extends Activity
 
 		String address = editTextAddressToConnect.getText().toString();
 		System.out.println("Starting client.... "+address);
-		manager.StartClient(address,8080);
+		manager.startClient(address,8080);
 	}
 	
 	/*
@@ -358,34 +253,6 @@ public class MainActivity extends Activity
 		});
 	}
 	
-	public void receivePreview(byte[]data, Camera cam){
-		Camera.Size size = cam.getParameters().getPreviewSize();
-		android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(size.width, size.height, android.graphics.Bitmap.Config.ARGB_8888);
-		Allocation bmData = renderScriptNV21ToRGBA888(
-			context,
-			size.width,
-			size.height,
-			data);
-		bmData.copyTo(bitmap);
-		SetImageInView(bitmap);
-		//.setBackground(new android.graphics.drawable.BitmapDrawable(getResources(), bitmap));
-	}
-	public Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
-		RenderScript rs = RenderScript.create(context);
-		ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
-
-		Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
-		Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
-
-		Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
-		Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
-
-		in.copyFrom(nv21);
-
-		yuvToRgbIntrinsic.setInput(in);
-		yuvToRgbIntrinsic.forEach(out);
-		return out;
-	}
 	*/
 }
 
@@ -427,7 +294,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     }
 	public void receivePreview(byte[]data, Camera cam){
 		if(!mManager.isClient()){return;}
-		if(System.currentTimeMillis() < lastSend + 1000){
+		if(System.currentTimeMillis() < lastSend + 3000){
 			return;
 		}
 		lastSend = System.currentTimeMillis();
@@ -442,7 +309,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 		ByteArrayOutputStream blob = new ByteArrayOutputStream();
 		bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 0 /* Ignored for PNGs */, blob);
 		byte[] bitmapdata = blob.toByteArray();
-		mManager.sendToClients(bitmapdata,((MainActivity)mContext).getObservers());
+		mManager.sendToClients(bitmapdata,"image",((MainActivity)mContext).getObservers());
 		//((MainActivity)mContext).SetImageInView(bitmap);
 		 //.setBackground(new android.graphics.drawable.BitmapDrawable(getResources(), bitmap));
 		 
