@@ -156,15 +156,15 @@ public class Main
 			new ConnectionInterruptListener(){
 				public void run(int code){
 					switch(code){
-						case tNet.tools.DisconnectionCode.DISCONNECT_BY_REQUEST:{
+						case tNet.constants.DisconnectionCode.DISCONNECT_BY_REQUEST:{
 								PrintChatMsg("Server stop. Disconnected by request.");
 								break;
 							}
-						case tNet.tools.DisconnectionCode.DISCONNECT_BY_SERVER:{
+						case tNet.constants.DisconnectionCode.DISCONNECT_BY_SERVER:{
 								PrintChatMsg("Server stop. Disconnected by server.");
 								break;
 							}
-						case tNet.tools.DisconnectionCode.NO_RESPONSE:{
+						case tNet.constants.DisconnectionCode.NO_RESPONSE:{
 								PrintChatMsg("Server stop. No server response.");
 								break;
 							}
@@ -176,15 +176,15 @@ public class Main
 			new ConnectionInterruptListener(){
 				public void run(int code){
 					switch(code){
-						case tNet.tools.DisconnectionCode.DISCONNECT_BY_REQUEST:{
+						case tNet.constants.DisconnectionCode.DISCONNECT_BY_REQUEST:{
 								PrintChatMsg("Client stop. Disconnected by request.");
 								break;
 							}
-						case tNet.tools.DisconnectionCode.DISCONNECT_BY_SERVER:{
+						case tNet.constants.DisconnectionCode.DISCONNECT_BY_SERVER:{
 								PrintChatMsg("Client stop. Disconnected by server.");
 								break;
 							}
-						case tNet.tools.DisconnectionCode.NO_RESPONSE:{
+						case tNet.constants.DisconnectionCode.NO_RESPONSE:{
 								PrintChatMsg("Client stop. No server response.");
 								break;
 							}
