@@ -10,6 +10,7 @@ import tNet.core.*;
 import tNet.connection.*;
 import tNet.tools.*;
 import tNet.events.*;
+import tNet.constants.*;
 
 public class NetworkManager
 {
@@ -154,7 +155,7 @@ public class NetworkManager
 		);
 	}
 	private void initializeServer(){
-		System.out.println("Initializing server");
+		//System.out.println("Initializing server");
 		server = new ServerTCP(
 			this.port,
 			new Action(){
@@ -232,7 +233,7 @@ public class NetworkManager
 	}
 	
 	private void initializeClient(String ipAddress, int port){
-		System.out.println("Initializing client in address: "+ipAddress);
+		//System.out.println("Initializing client in address: "+ipAddress);
 		client = new ClientTCP(
 			ipAddress,
 			port,
@@ -275,7 +276,7 @@ public class NetworkManager
 	public void StopClient(){
 		network.RunInNetworkThread(new Runnable(){
 			public void run(){
-				NetworkMessage msg = new NetworkMessage(Constants.UPDATE_CLIENT_STATE,"StopRequest",DisconnectionCode.DISCONNECT_BY_REQUEST,clientID);
+				NetworkMessage msg = new NetworkMessage(MessageType.UPDATE_CLIENT_STATE,"StopRequest",DisconnectionCode.DISCONNECT_BY_REQUEST,clientID);
 				msg.setReceivers(new ConnectionID[]{ConnectionID.fromInt(0)});
 				sendToServer(msg);
 			}
@@ -289,7 +290,7 @@ public class NetworkManager
 				onClientStop(DisconnectionCode.DISCONNECT_BY_SERVER);
 			}
 			*/
-			NetworkMessage msg = new NetworkMessage(Constants.UPDATE_CLIENT_STATE,"Stop",DisconnectionCode.DISCONNECT_BY_SERVER,ConnectionID.fromInt(0));
+			NetworkMessage msg = new NetworkMessage(MessageType.UPDATE_CLIENT_STATE,"Stop",DisconnectionCode.DISCONNECT_BY_SERVER,ConnectionID.fromInt(0));
 			msg.setReceivers(clientsID);
 			server.sendDataToAll(Serializer.serialize(msg.toString()));
 			network.RunInNetworkThread(new Runnable(){
@@ -307,7 +308,7 @@ public class NetworkManager
 		isServer = true;
 		isConnected = true;
 		if(startingHost){initializeClient("127.0.0.1",port);}
-		System.out.println("Server started");
+		//System.out.println("Server started");
 		//System.out.println("onStartServer called in "+Thread.currentThread().getName()+" Thread");
 		if(onStartServerListener!=null){
 			onStartServerListener.run();
@@ -331,7 +332,7 @@ public class NetworkManager
 	private void onStartClient(ConnectionID conn){
 		isClient = true;
 		isConnected = true;
-		System.out.println("Client started");
+		//System.out.println("Client started");
 		if(onStartClientListener!=null){
 			onStartClientListener.run();
 		}
@@ -358,14 +359,14 @@ public class NetworkManager
 		addClientToList(conn);
 		
 		NetworkMessage msgAll = new NetworkMessage(
-			Constants.UPDATE_CONNECTION_LIST,
+			MessageType.UPDATE_CONNECTION_LIST,
 			ConnectionID.ConvertArrayConnectionID(clientsID), 
 			ConnectionID.fromInt(0));
 		msgAll.setReceivers(clientsID);
 
 		sendToAll(msgAll);
 		
-		NetworkMessage msg = new NetworkMessage(Constants.UPDATE_CLIENT_STATE, "Start", conn.id, ConnectionID.fromInt(0));
+		NetworkMessage msg = new NetworkMessage(MessageType.UPDATE_CLIENT_STATE, "Start", conn.id, ConnectionID.fromInt(0));
 		msg.setReceivers(new ConnectionID[]{conn});
 		server.sendData(Serializer.serialize(msg.toString()),conn);
 		
@@ -380,7 +381,7 @@ public class NetworkManager
 		removeClientFromList(conn);
 		
 		server.removeClient(conn);
-		NetworkMessage msgAll = new NetworkMessage(Constants.UPDATE_CONNECTION_LIST, ConnectionID.ConvertArrayConnectionID(clientsID), ConnectionID.fromInt(0));
+		NetworkMessage msgAll = new NetworkMessage(MessageType.UPDATE_CONNECTION_LIST, ConnectionID.ConvertArrayConnectionID(clientsID), ConnectionID.fromInt(0));
 		msgAll.setReceivers(clientsID);
 		sendToAll(msgAll);
 
@@ -430,7 +431,7 @@ public class NetworkManager
 			network.RunInNetworkThread(
 				new Runnable(){
 					public void run(){
-						NetworkMessage msg = new NetworkMessage(Constants.UPDATE_CLIENT_STATE,"Stop",DisconnectionCode.DISCONNECT_BY_SERVER,ConnectionID.fromInt(0));
+						NetworkMessage msg = new NetworkMessage(MessageType.UPDATE_CLIENT_STATE,"Stop",DisconnectionCode.DISCONNECT_BY_SERVER,ConnectionID.fromInt(0));
 						msg.setReceivers(new ConnectionID[]{id});
 						server.sendData(
 							Serializer.serialize(msg.toString()),
@@ -446,7 +447,7 @@ public class NetworkManager
 		network.RunInNetworkThread(
 			new Runnable(){
 				public void run(){
-					NetworkMessage msg = new NetworkMessage(Constants.CUSTOMIZED_DATA, data, clientID);
+					NetworkMessage msg = new NetworkMessage(MessageType.CUSTOMIZED_DATA, data, clientID);
 					msg.setReceivers(targets);
 					sendToServer(msg);
 				}
@@ -458,7 +459,7 @@ public class NetworkManager
 		network.RunInNetworkThread(
 			new Runnable(){
 				public void run(){
-					NetworkMessage msg = new NetworkMessage(Constants.CUSTOMIZED_DATA, key, data, clientID);
+					NetworkMessage msg = new NetworkMessage(MessageType.CUSTOMIZED_DATA, key, data, clientID);
 					msg.setReceivers(targets);
 					sendToServer(msg);
 				}
@@ -473,7 +474,7 @@ public class NetworkManager
 				public void run(){
 					ConnectionID conn = clientID;
 					if(conn == null){conn = new ConnectionID(0);}
-					NetworkMessage msg = new NetworkMessage(Constants.CUSTOMIZED_DATA, data, conn);
+					NetworkMessage msg = new NetworkMessage(MessageType.CUSTOMIZED_DATA, data, conn);
 					sendToAll(msg);
 				}
 			}
@@ -486,7 +487,7 @@ public class NetworkManager
 				public void run(){
 					ConnectionID conn = clientID;
 					if(conn == null){conn = new ConnectionID(0);}
-					NetworkMessage msg = new NetworkMessage(Constants.CUSTOMIZED_DATA, key, data, conn);
+					NetworkMessage msg = new NetworkMessage(MessageType.CUSTOMIZED_DATA, key, data, conn);
 					sendToAll(msg);
 				}
 			}
@@ -510,7 +511,7 @@ public class NetworkManager
 		network.RunInNetworkThread(
 			new Runnable(){
 				public void run(){
-					NetworkMessage msg = new NetworkMessage(Constants.CUSTOMIZED_DATA, data, clientID);
+					NetworkMessage msg = new NetworkMessage(MessageType.CUSTOMIZED_DATA, data, clientID);
 					sendToServer(msg);
 				}
 			}
@@ -521,7 +522,7 @@ public class NetworkManager
 		network.RunInNetworkThread(
 			new Runnable(){
 				public void run(){
-					NetworkMessage msg = new NetworkMessage(Constants.CUSTOMIZED_DATA, key, data, clientID);
+					NetworkMessage msg = new NetworkMessage(MessageType.CUSTOMIZED_DATA, key, data, clientID);
 					sendToServer(msg);
 				}
 			}
@@ -542,10 +543,10 @@ public class NetworkManager
 		//System.out.println("NetworkMessage received. Is server ="+isServerReceiver+" | Type = "+message.getType());
 		//System.out.println("OnReceiveNetworkMessage called in "+Thread.currentThread().getName()+" Thread");
 		if(isServerReceiver){
-			if(message.getType() == Constants.CUSTOMIZED_DATA){
+			if(message.getType() == MessageType.CUSTOMIZED_DATA){
 				OnReceiveCustomizedData(message, isServerReceiver);
 			}
-			if(message.getType() == Constants.CHECK_ACTIVITY){
+			if(message.getType() == MessageType.CHECK_ACTIVITY){
 				if(clientsPing.containsKey(message.getSenderID())){
 					PingConnection ping = clientsPing.get(message.getSenderID());
 					if(ping.checkResponse()){
@@ -554,9 +555,9 @@ public class NetworkManager
 					}
 				}
 			}
-			if(message.getType() == Constants.UPDATE_CLIENT_STATE){
+			if(message.getType() == MessageType.UPDATE_CLIENT_STATE){
 				if(message.getKey().equals("StopRequest")){
-					NetworkMessage msg = new NetworkMessage(Constants.UPDATE_CLIENT_STATE,"Stop",DisconnectionCode.DISCONNECT_BY_REQUEST,ConnectionID.fromInt(0));
+					NetworkMessage msg = new NetworkMessage(MessageType.UPDATE_CLIENT_STATE,"Stop",DisconnectionCode.DISCONNECT_BY_REQUEST,ConnectionID.fromInt(0));
 					msg.setReceivers(new ConnectionID[]{message.getSenderID()});
 					server.sendData(
 						Serializer.serialize(msg.toString()),
@@ -574,7 +575,7 @@ public class NetworkManager
 		}else{
 			switch(message.getType()){
 
-				case Constants.CHECK_ACTIVITY:  
+				case MessageType.CHECK_ACTIVITY:  
 					if(clientPing !=null){
 						clientPing.pingReceived();
 						message.setReceivers(new ConnectionID[]{new ConnectionID(0)});
@@ -584,7 +585,7 @@ public class NetworkManager
 					}
 					break;
 					
-				case Constants.UPDATE_CLIENT_STATE:  
+				case MessageType.UPDATE_CLIENT_STATE:  
 					if(message.getKey().equals("Start")){
 						clientID = ConnectionID.fromInt(message.getData());
 						clientPing = new PingConnection(clientID);
@@ -596,12 +597,12 @@ public class NetworkManager
 					}
 					break;
 					
-				case Constants.CUSTOMIZED_DATA:  
+				case MessageType.CUSTOMIZED_DATA:  
 					OnReceiveCustomizedData(message, isServerReceiver);
 					break;
 					
 					
-				case Constants.UPDATE_CONNECTION_LIST: 
+				case MessageType.UPDATE_CONNECTION_LIST: 
 					if(message.getData() instanceof int[]){
 						int[] ids = (int[])message.getData();
 						setClientList(Arrays.asList( ConnectionID.ConvertArrayConnectionID(ids)));
@@ -661,7 +662,7 @@ public class NetworkManager
 				for(PingConnection ping : clientsPing.values()){
 					if(ping.checkResponse()){
 						if(ping.isWaitingToSend()){
-							NetworkMessage msg = new NetworkMessage(Constants.CHECK_ACTIVITY,"","0",ping.id);
+							NetworkMessage msg = new NetworkMessage(MessageType.CHECK_ACTIVITY,"","0",ping.id);
 							msg.setReceivers(new ConnectionID[]{ping.id});
 							server.sendData(Serializer.serialize(msg.toString()),ping.id);
 							ping.pingSended();
@@ -669,7 +670,7 @@ public class NetworkManager
 						}
 					}else{
 						//client nao responde e deve ser desconectado
-						System.out.println("Client nao responde... Client"+ping.id);
+						//System.out.println("Client nao responde... Client"+ping.id);
 						onClientDisconnected(ping.id);
 					}
 				}
