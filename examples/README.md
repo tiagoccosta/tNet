@@ -8,5 +8,4 @@
 
 ## Examples in development
 * DstributedSystems
-* AndroidChatApp
 * AndroidGameApp
