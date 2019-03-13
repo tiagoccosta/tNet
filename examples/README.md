@@ -4,6 +4,7 @@
 ## Working examples:
 * Server
 * SimpleConsoleChat
+* AndroidChatApp
 
 
 ## Examples in development
